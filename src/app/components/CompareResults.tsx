@@ -123,11 +123,19 @@ export function CompareResults() {
                   </div>
                 </div>
 
-                {/* Action Button */}
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
-                  최저가 구매
-                  <ExternalLink className="w-4 h-4" />
-                </button>
+                {/* Action Buttons */}
+                <div className="flex gap-2">
+                  <Link
+                    to={`/product/${product.id}`}
+                    className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium py-3 rounded-lg transition-colors text-center"
+                  >
+                    상세정보
+                  </Link>
+                  <button className="flex-[2] bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                    최저가 구매
+                    <ExternalLink className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

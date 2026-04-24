@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { Search, TrendingUp } from "lucide-react";
+import { ProductRegistrationSheet } from "./ProductRegistrationSheet";
 
 const POPULAR_INGREDIENTS = ["비타민D", "오메가3", "프로바이오틱스", "마그네슘", "콜라겐"];
 
@@ -13,6 +14,7 @@ const MOCK_AUTOCOMPLETE = [
 export function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAutocomplete, setShowAutocomplete] = useState(false);
+  const [showRegistrationSheet, setShowRegistrationSheet] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = (term: string) => {
@@ -88,7 +90,13 @@ export function Home() {
             ))}
 
             {/* Unregistered CTA */}
-            <button className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-between group">
+            <button
+              onClick={() => {
+                setShowRegistrationSheet(true);
+                setShowAutocomplete(false);
+              }}
+              className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-between group"
+            >
               <span className="text-sm text-slate-700">
                 <span className="font-semibold">{searchQuery}</span> 성분이 없나요?
               </span>
@@ -128,6 +136,13 @@ export function Home() {
           <li>• 광고 없는 순수 데이터 기반 서비스</li>
         </ul>
       </div>
+
+      {/* Product Registration Sheet */}
+      <ProductRegistrationSheet
+        isOpen={showRegistrationSheet}
+        onClose={() => setShowRegistrationSheet(false)}
+        prefilledIngredient={searchQuery}
+      />
     </div>
   );
 }
