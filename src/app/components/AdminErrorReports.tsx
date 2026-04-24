@@ -1,103 +1,35 @@
 import { Link } from "react-router";
-import { ArrowLeft, Check, ExternalLink, Mail } from "lucide-react";
-import { useState } from "react";
+import { Check, ExternalLink, Mail } from "lucide-react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import { ErrorReport } from "../types";
+import { MOCK_REPORTS } from "../data/mock";
+import { ERROR_TYPE_MAP } from "../constants";
 
-interface ErrorReport {
-  id: number;
-  productName: string;
-  productId: string;
-  errorType: string;
-  description: string;
-  email: string;
-  reportDate: string;
-  status: "pending" | "resolved";
-}
 
-const ERROR_TYPE_MAP: Record<string, string> = {
-  price: "가격 정보 오류",
-  ingredient: "성분 정보 오류",
-  badge: "식약처 인정 현황 오류",
-  product_info: "제품명/브랜드 오류",
-  other: "기타",
-};
-
-const MOCK_REPORTS: ErrorReport[] = [
-  {
-    id: 1,
-    productName: "프리미엄 NMN 250mg",
-    productId: "1",
-    errorType: "price",
-    description: "실제 쿠팡 가격은 22,000원인데 25,500원으로 표시되고 있습니다.",
-    email: "user1@example.com",
-    reportDate: "2026-04-23 15:20",
-    status: "pending",
-  },
-  {
-    id: 2,
-    productName: "NMN 순도 99% 고함량",
-    productId: "2",
-    errorType: "ingredient",
-    description: "성분표에 비타민 B3가 누락되어 있습니다.",
-    email: "user2@example.com",
-    reportDate: "2026-04-23 14:10",
-    status: "pending",
-  },
-  {
-    id: 3,
-    productName: "NMN + 레스베라트롤 복합",
-    productId: "3",
-    errorType: "badge",
-    description: "레스베라트롤이 '인정' 배지로 표시되어야 하는데 '주의'로 나옵니다.",
-    email: "",
-    reportDate: "2026-04-23 11:30",
-    status: "pending",
-  },
-  {
-    id: 4,
-    productName: "NMN 150mg 저용량",
-    productId: "4",
-    errorType: "product_info",
-    description: "브랜드명이 '퓨어라이프'가 아니라 '퓨어헬스'입니다.",
-    email: "user4@example.com",
-    reportDate: "2026-04-22 18:45",
-    status: "resolved",
-  },
-];
 
 export function AdminErrorReports() {
   const [reports, setReports] = useState<ErrorReport[]>(MOCK_REPORTS);
 
-  const handleResolve = (id: number) => {
+  const handleResolve = useCallback((id: number) => {
     setReports((prev) =>
       prev.map((report) => (report.id === id ? { ...report, status: "resolved" as const } : report))
     );
     toast.success("오류 신고가 처리되었습니다.");
-  };
+  }, []);
 
   const pendingReports = reports.filter((r) => r.status === "pending");
   const resolvedReports = reports.filter((r) => r.status === "resolved");
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link
-            to="/admin/dashboard"
-            className="flex items-center gap-2 text-slate-300 hover:text-white mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">대시보드로 돌아가기</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-white">오류 신고 관리</h1>
-          <p className="text-slate-400 mt-1">
-            미처리 신고: {pendingReports.length}건
-          </p>
-        </div>
-      </header>
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white mb-2">오류 신고 관리</h1>
+        <p className="text-slate-400">
+          미처리 신고: {pendingReports.length}건
+        </p>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Pending Reports */}
         <div className="mb-8">
           <h2 className="text-lg font-bold text-white mb-4">미처리 신고</h2>
@@ -201,7 +133,6 @@ export function AdminErrorReports() {
             ))}
           </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

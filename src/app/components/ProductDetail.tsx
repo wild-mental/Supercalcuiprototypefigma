@@ -1,106 +1,20 @@
-import { useParams, Link } from "react-router";
+import { useParams } from "react-router";
 import { ArrowLeft, ExternalLink, Check, AlertTriangle, X, HelpCircle, ChevronDown, Share2, Flag } from "lucide-react";
-import { useState } from "react";
 import * as Accordion from "@radix-ui/react-accordion";
 import { ShareModal } from "./ShareModal";
 import { ErrorReportModal } from "./ErrorReportModal";
+import { SourceInfoModal } from "./SourceInfoModal";
+import { useModal } from "../hooks/useModal";
+import { MOCK_PRODUCT } from "../data/mock";
+import { IngredientBadge } from "./shared/IngredientBadge";
 
-type BadgeStatus = "APPROVED" | "CAUTION" | "NOT_APPROVED" | "UNREGISTERED";
 
-interface Ingredient {
-  name: string;
-  amount: string;
-  status: BadgeStatus;
-  evidence: string;
-}
-
-const MOCK_PRODUCT = {
-  id: 1,
-  image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800",
-  brand: "헬스케어랩",
-  name: "프리미엄 NMN 250mg",
-  servingSize: "1캡슐",
-  dailyCost: 850,
-  finalPrice: 25500,
-  packageInfo: "30일분",
-  ingredients: [
-    {
-      name: "NMN (니코틴아마이드 모노뉴클레오타이드)",
-      amount: "250mg",
-      status: "CAUTION" as BadgeStatus,
-      evidence: "식약처 고시 기능성 원료는 아니나, 국내 일부 제품에서 '니코틴산아마이드' 형태로 인정받은 사례가 있습니다. 다만 NMN 자체는 현재 개별인정형 원료 신청 검토 중입니다.",
-    },
-    {
-      name: "비타민 B3 (나이아신아마이드)",
-      amount: "15mg",
-      status: "APPROVED" as BadgeStatus,
-      evidence: "식품의약품안전처 고시 제2023-86호에 따라 '에너지 생성에 필요, 피부건강 유지에 필요'로 기능성이 인정된 원료입니다.",
-    },
-    {
-      name: "레스베라트롤",
-      amount: "50mg",
-      status: "APPROVED" as BadgeStatus,
-      evidence: "식약처 개별인정형 기능성 원료로 '항산화 작용을 통한 세포 보호'의 기능성이 인정되었습니다. (인정번호: 2019-21)",
-    },
-    {
-      name: "프테로스틸벤",
-      amount: "10mg",
-      status: "UNREGISTERED" as BadgeStatus,
-      evidence: "식약처 등재 원료가 아닙니다. 국내에서 건강기능식품 기능성 원료로 인정받지 못한 성분입니다.",
-    },
-  ],
-};
-
-const BadgeConfig = {
-  APPROVED: {
-    bg: "bg-green-100",
-    border: "border-green-300",
-    text: "text-green-800",
-    icon: Check,
-    label: "인정",
-  },
-  CAUTION: {
-    bg: "bg-yellow-100",
-    border: "border-yellow-300",
-    text: "text-yellow-800",
-    icon: AlertTriangle,
-    label: "주의",
-  },
-  NOT_APPROVED: {
-    bg: "bg-red-100",
-    border: "border-red-300",
-    text: "text-red-800",
-    icon: X,
-    label: "미인정",
-  },
-  UNREGISTERED: {
-    bg: "bg-slate-100",
-    border: "border-slate-300",
-    text: "text-slate-700",
-    icon: HelpCircle,
-    label: "식약처 미등재 원료",
-  },
-};
-
-function IngredientBadge({ status }: { status: BadgeStatus }) {
-  const config = BadgeConfig[status];
-  const Icon = config.icon;
-
-  return (
-    <div
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border ${config.bg} ${config.border}`}
-    >
-      <Icon className={`w-4 h-4 ${config.text}`} />
-      <span className={`text-xs font-semibold ${config.text}`}>{config.label}</span>
-    </div>
-  );
-}
 
 export function ProductDetail() {
   const { productId } = useParams<{ productId: string }>();
-  const [showSourceInfo, setShowSourceInfo] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showErrorReport, setShowErrorReport] = useState(false);
+  const sourceModal = useModal();
+  const shareModal = useModal();
+  const errorReportModal = useModal();
 
   const currentUrl = typeof window !== "undefined" ? window.location.href : "";
   const shareUrl = `${window.location.origin}/share/${productId}`;
@@ -204,7 +118,7 @@ export function ProductDetail() {
       {/* Action Buttons */}
       <div className="px-4 py-6 space-y-3">
         <button
-          onClick={() => setShowSourceInfo(true)}
+          onClick={sourceModal.open}
           className="w-full bg-slate-100 hover:bg-slate-200 text-slate-900 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2 border border-slate-300"
         >
           출처 확인
@@ -213,14 +127,14 @@ export function ProductDetail() {
 
         <div className="flex gap-3">
           <button
-            onClick={() => setShowShareModal(true)}
+            onClick={shareModal.open}
             className="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Share2 className="w-4 h-4" />
             공유하기
           </button>
           <button
-            onClick={() => setShowErrorReport(true)}
+            onClick={errorReportModal.open}
             className="flex-1 bg-red-100 hover:bg-red-200 text-red-700 font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             <Flag className="w-4 h-4" />
@@ -230,48 +144,10 @@ export function ProductDetail() {
       </div>
 
       {/* Source Info Modal */}
-      {showSourceInfo && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/50 z-40"
-            onClick={() => setShowSourceInfo(false)}
-          />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 max-w-md mx-auto bg-white rounded-xl shadow-2xl z-50 max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-              <h3 className="font-bold text-slate-900">데이터 출처</h3>
-              <button
-                onClick={() => setShowSourceInfo(false)}
-                className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-600" />
-              </button>
-            </div>
-            <div className="px-6 py-6 space-y-4">
-              <div>
-                <h4 className="font-semibold text-slate-900 mb-2">식약처 공식 자료</h4>
-                <ul className="space-y-2 text-sm text-slate-700">
-                  <li>• 건강기능식품 기능성 원료 인정 현황 (2026년 4월 기준)</li>
-                  <li>• 식품의약품안전처 고시 제2023-86호</li>
-                  <li>• 개별인정형 원료 데이터베이스</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-900 mb-2">가격 정보</h4>
-                <ul className="space-y-2 text-sm text-slate-700">
-                  <li>• 쿠팡 오픈 API (2026-04-23 09:30 기준)</li>
-                  <li>• 네이버 쇼핑 가격비교 (수집 중)</li>
-                </ul>
-              </div>
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <p className="text-xs text-amber-800">
-                  본 정보는 참고용이며, 구매 전 반드시 제품 라벨 및 식약처 공식 사이트를
-                  확인하시기 바랍니다.
-                </p>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <SourceInfoModal 
+        isOpen={sourceModal.isOpen} 
+        onClose={sourceModal.close} 
+      />
 
       {/* Ingredient Table */}
       <div className="mt-4 bg-white px-4 py-6 mb-6">
@@ -304,16 +180,16 @@ export function ProductDetail() {
 
       {/* Share Modal */}
       <ShareModal
-        isOpen={showShareModal}
-        onClose={() => setShowShareModal(false)}
+        isOpen={shareModal.isOpen}
+        onClose={shareModal.close}
         productName={MOCK_PRODUCT.name}
         productUrl={shareUrl}
       />
 
       {/* Error Report Modal */}
       <ErrorReportModal
-        isOpen={showErrorReport}
-        onClose={() => setShowErrorReport(false)}
+        isOpen={errorReportModal.isOpen}
+        onClose={errorReportModal.close}
         productName={MOCK_PRODUCT.name}
         productId={productId}
       />

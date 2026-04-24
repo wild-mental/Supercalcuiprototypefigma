@@ -9,6 +9,7 @@ import { AdminLogin } from "./components/AdminLogin";
 import { AdminDashboard } from "./components/AdminDashboard";
 import { AdminRegistrationRequests } from "./components/AdminRegistrationRequests";
 import { AdminErrorReports } from "./components/AdminErrorReports";
+import { AdminLayout } from "./components/AdminLayout";
 
 export const router = createBrowserRouter([
   {
@@ -23,7 +24,13 @@ export const router = createBrowserRouter([
   },
   { path: "/signup", Component: Signup },
   { path: "/admin/login", Component: AdminLogin },
-  { path: "/admin/dashboard", Component: AdminDashboard },
-  { path: "/admin/registration-requests", Component: AdminRegistrationRequests },
-  { path: "/admin/error-reports", Component: AdminErrorReports },
+  {
+    path: "/admin",
+    Component: AdminLayout,
+    children: [
+      { path: "dashboard", Component: AdminDashboard },
+      { path: "registration-requests", Component: AdminRegistrationRequests },
+      { path: "error-reports", Component: AdminErrorReports },
+    ],
+  },
 ]);

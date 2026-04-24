@@ -1,94 +1,39 @@
-import { Link } from "react-router";
-import { ArrowLeft, Check, X, Mail } from "lucide-react";
-import { useState } from "react";
+import { Check, X, Mail } from "lucide-react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
-
-interface RegistrationRequest {
-  id: number;
-  ingredientName: string;
-  email: string;
-  requestDate: string;
-  status: "pending" | "approved" | "rejected";
-}
-
-const MOCK_REQUESTS: RegistrationRequest[] = [
-  {
-    id: 1,
-    ingredientName: "코엔자임 Q10 (유비퀴논)",
-    email: "user1@example.com",
-    requestDate: "2026-04-23 14:30",
-    status: "pending",
-  },
-  {
-    id: 2,
-    ingredientName: "아스타잔틴",
-    email: "user2@example.com",
-    requestDate: "2026-04-23 13:15",
-    status: "pending",
-  },
-  {
-    id: 3,
-    ingredientName: "L-테아닌",
-    email: "",
-    requestDate: "2026-04-23 11:45",
-    status: "pending",
-  },
-  {
-    id: 4,
-    ingredientName: "베타글루칸",
-    email: "user4@example.com",
-    requestDate: "2026-04-22 16:20",
-    status: "approved",
-  },
-  {
-    id: 5,
-    ingredientName: "피크노제놀",
-    email: "user5@example.com",
-    requestDate: "2026-04-22 10:00",
-    status: "rejected",
-  },
-];
+import { RegistrationRequest } from "../types";
+import { MOCK_REQUESTS } from "../data/mock";
 
 export function AdminRegistrationRequests() {
   const [requests, setRequests] = useState<RegistrationRequest[]>(MOCK_REQUESTS);
 
-  const handleApprove = (id: number) => {
+  const handleApprove = useCallback((id: number) => {
     setRequests((prev) =>
       prev.map((req) => (req.id === id ? { ...req, status: "approved" as const } : req))
     );
     toast.success("등록 요청이 승인되었습니다.");
-  };
+  }, []);
 
-  const handleReject = (id: number) => {
+  const handleReject = useCallback((id: number) => {
     setRequests((prev) =>
       prev.map((req) => (req.id === id ? { ...req, status: "rejected" as const } : req))
     );
     toast.error("등록 요청이 거부되었습니다.");
-  };
+  }, []);
 
   const pendingRequests = requests.filter((r) => r.status === "pending");
   const processedRequests = requests.filter((r) => r.status !== "pending");
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      {/* Header */}
-      <header className="bg-slate-800 border-b border-slate-700 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <Link
-            to="/admin/dashboard"
-            className="flex items-center gap-2 text-slate-300 hover:text-white mb-4"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm font-medium">대시보드로 돌아가기</span>
-          </Link>
-          <h1 className="text-2xl font-bold text-white">제품 등록 요청 관리</h1>
-          <p className="text-slate-400 mt-1">
-            대기 중인 요청: {pendingRequests.length}건
-          </p>
-        </div>
-      </header>
+    <>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white mb-2">제품 등록 요청 관리</h1>
+        <p className="text-slate-400">
+          대기 중인 요청: {pendingRequests.length}건
+        </p>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+
         {/* Pending Requests */}
         <div className="mb-8">
           <h2 className="text-lg font-bold text-white mb-4">대기 중인 요청</h2>
@@ -221,7 +166,6 @@ export function AdminRegistrationRequests() {
             </table>
           </div>
         </div>
-      </div>
-    </div>
+    </>
   );
 }

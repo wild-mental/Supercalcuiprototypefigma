@@ -1,7 +1,23 @@
-import { useState } from "react";
+/**
+ * @file Home.tsx
+ * @description 메인 홈페이지 (영양제 검색 및 최저가 비교 진입 화면)
+ * 
+ * [개요]
+ * 사용자가 영양제 성분명을 검색하고 연관 자동완성을 확인하며, 
+ * 미등록 제품에 대한 등록 요청 모달을 띄울 수 있는 서비스의 첫 화면입니다.
+ * 
+ * [함수 호출 구조 및 상태 흐름]
+ * 1. 텍스트 입력 -> setSearchQuery 상태 업데이트 -> useDebounce에 의해 debouncedSearchQuery 지연 변경
+ * 2. 입력 감지 -> setShowAutocomplete(true)를 통해 자동완성 Dropdown 노출
+ * 3. 아이템 선택 혹은 Enter 입력 -> handleSearch(term) 호출 -> /compare/:term 경로로 라우팅
+ * 4. 미등록 CTA 클릭 -> registrationSheet.open() 호출 -> ProductRegistrationSheet 모달 오픈
+ */
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { Search, TrendingUp } from "lucide-react";
 import { ProductRegistrationSheet } from "./ProductRegistrationSheet";
+import { useModal } from "../hooks/useModal";
+import { useDebounce } from "../hooks/useDebounce";
 
 const POPULAR_INGREDIENTS = ["비타민D", "오메가3", "프로바이오틱스", "마그네슘", "콜라겐"];
 
@@ -11,19 +27,23 @@ const MOCK_AUTOCOMPLETE = [
   { id: 3, name: "니코틴아마이드 리보사이드 + NMN", matches: "NMN" },
 ];
 
+/**
+ * 메인 홈 컴포넌트
+ */
 export function Home() {
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 200);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
-  const [showRegistrationSheet, setShowRegistrationSheet] = useState(false);
+  const registrationSheet = useModal();
   const navigate = useNavigate();
 
-  const handleSearch = (term: string) => {
+  const handleSearch = useCallback((term: string) => {
     if (term.trim()) {
       navigate(`/compare/${encodeURIComponent(term)}`);
     }
-  };
+  }, [navigate]);
 
-  const highlightMatch = (text: string, query: string) => {
+  const highlightMatch = useCallback((text: string, query: string) => {
     if (!query) return text;
     const parts = text.split(new RegExp(`(${query})`, 'gi'));
     return parts.map((part, i) =>
@@ -31,7 +51,7 @@ export function Home() {
         <span key={i} className="bg-yellow-200 font-semibold">{part}</span> :
         part
     );
-  };
+  }, []);
 
   return (
     <div className="px-4 py-8">
@@ -92,7 +112,7 @@ export function Home() {
             {/* Unregistered CTA */}
             <button
               onClick={() => {
-                setShowRegistrationSheet(true);
+                registrationSheet.open();
                 setShowAutocomplete(false);
               }}
               className="w-full px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-between group"
@@ -139,8 +159,8 @@ export function Home() {
 
       {/* Product Registration Sheet */}
       <ProductRegistrationSheet
-        isOpen={showRegistrationSheet}
-        onClose={() => setShowRegistrationSheet(false)}
+        isOpen={registrationSheet.isOpen}
+        onClose={registrationSheet.close}
         prefilledIngredient={searchQuery}
       />
     </div>
